@@ -1,8 +1,11 @@
 package com.example.updateui;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
@@ -16,6 +19,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        NetWorkStatus();
         setContentView(R.layout.activity_main);
         mButton1 = (Button) findViewById(R.id.butten1);
         mButton1.setOnClickListener(this);
@@ -85,4 +90,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     };
+
+    private boolean NetWorkStatus() {
+
+        boolean netSataus = false;
+
+        ConnectivityManager cwjManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        cwjManager.getActiveNetworkInfo();
+
+        if (cwjManager.getActiveNetworkInfo() != null) {
+
+            netSataus = cwjManager.getActiveNetworkInfo().isAvailable();
+
+        }
+
+        if (!netSataus) {
+
+            AlertDialog.Builder b = new AlertDialog.Builder(this).setTitle("没有可用的网络")
+
+                    .setMessage("是否对网络进行设置?");
+
+            b.setPositiveButton("是", new DialogInterface.OnClickListener() {
+
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    Intent intent = null;
+                    /**
+                     * 判断手机系统的版本！如果API大于10 就是3.0+
+                     * 因为3.0以上的版本的设置和3.0以下的设置不一样，调用的方法不同
+                     */
+                    if (android.os.Build.VERSION.SDK_INT > 10) {
+                        intent = new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS);
+                    } else {
+                        intent = new Intent();
+                        ComponentName component = new ComponentName(
+                                "com.android.settings",
+                                "com.android.settings.WirelessSettings");
+                        intent.setComponent(component);
+                        intent.setAction("android.intent.action.VIEW");
+                    }
+                    startActivity(intent);
+                }
+
+            }).setNeutralButton("否", new DialogInterface.OnClickListener() {
+
+                public void onClick(DialogInterface dialog, int whichButton) {
+
+                    dialog.cancel();
+
+                }
+
+            }).show();
+
+        }
+
+        return netSataus;
+
+    }
 }
